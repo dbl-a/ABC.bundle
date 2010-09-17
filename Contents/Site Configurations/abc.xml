@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site site="http://abc.go.com"
+	    plugin="http://a.abc.com/media/_global/player/player1.41.7/flash/SFP_Locke.swf?"
+			initialState="playing"
+			version="1.0">
+
+	<crop x="45" y="25" width="933" height="708"/>
+
+
+	<seekbar type="simple">
+		<start x="65" y="705" />
+		<end   x="574" y="705" />
+		<played>
+				<color rgb="a3b840" />
+		</played>
+	</seekbar>
+	
+
+	<!-- PLAYING -->
+	<state name="playing">
+		
+		<!-- Click to pause -->
+		<event>
+			<condition>
+				<command name="pause" />
+			</condition>
+			<action>
+				<click x="70" y="728" />
+				<goto state="paused" />
+			</action>
+		</event>
+
+		<!-- Video ends -->
+		<event>
+			<condition>
+				<and>
+					<color x="0" y="377" rgb="009999" />
+				</and>
+			</condition>
+			<action>
+				<goto state="end" />
+			</action>
+		</event>
+		
+	</state>
+	
+	<!-- PAUSED -->
+	<state name="paused">		
+		<!-- Wait for play command -->
+		<event>
+			<condition>
+			 	<command name="play" />
+			</condition>
+			<action>
+				<click x="20" y="705" />
+			 	<goto state="playing" />
+			</action>
+		</event>
+	</state>	
+	
+</site>
