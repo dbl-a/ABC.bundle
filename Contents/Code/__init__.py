@@ -3,10 +3,10 @@ import re, string, datetime
 from PMS import *
 
 ##################################################################################################ABC
-PLUGIN_PREFIX     = "/video/ABCFamily"
+PLUGIN_PREFIX     = "/video/ABC"
 
 ABC_URL                     = "http://abc.go.com/"
-ABC_FULL_EPISODES_SHOW_LIST = "http://abc.go.com/watch"
+ABC_FULL_EPISODES_SHOW_LIST = "http://abc.go.com/watch/shows"
 
 ABC_FEED                    = "http://www.abc.com/fod/"
 DEBUG                       = False
@@ -33,14 +33,19 @@ def MainMenu():
     pageUrl=ABC_FULL_EPISODES_SHOW_LIST
     dir = MediaContainer(mediaType='video')
     content = XML.ElementFromURL(pageUrl, True)
-    for item in content.xpath('//div[@id="show_list_data"]//ul[@class="show_listing_item"]'):
-      title=item.xpath("li[@class='show_listing_title']")[0].text
-      titleUrl = item.xpath("li[@class='show_listing_url']")[0].text
-      thumb= item.xpath("li[@class='show_listing_thumb']")[0].text
+    Log(content.xpath('//div[@id="abcShows"]/div/a'))
+    for item in content.xpath('//div[@id="abcShows"]/div/a'):
+      Log(item)
+      title=item.get('title')
+      titleUrl = item.get('page')
+      thumb=item.xpath("img")[0].get('src')
+      summary=item.get('desc')
+      Log(titleUrl)
+      Log(thumb)
+      Log(title)
+      Log(summary)
       if titleUrl.count("afv---") !=1:
-        Log(titleUrl)
-        Log(thumb)
-        dir.Append(Function(DirectoryItem(VideoPage, title,thumb=thumb), pageUrl = titleUrl))
+        dir.Append(Function(DirectoryItem(VideoPage, title,thumb=thumb, summary=summary), pageUrl = titleUrl))
     return dir 
 
 ####################################################################################################
@@ -49,27 +54,36 @@ def VideoPage(sender, pageUrl):
     Log("Hello")
     Log(pageUrl)
     page = HTTP.Request(pageUrl)
-    key1=re.compile('showLongCarouselTabbedViewPL5515994\.setValues\(1,\'PL5515994\',\'(.+?),').findall(page)[0]
-    Log("key1: ")
-    Log(key1)
-    eplink1="http://abc.go.com/vp2/showlongformcarouselimagelist/feed/" + key1
-    eplink1=eplink1 + "/start/0/limit/100/t/PL5515994/c/showFEPCarousel/pg/false?rand=05040004_3"
+    showID=re.compile('"showid": "(.+?)"}').findall(page)[0]
+    Log("showID: ")
+    Log(showID)
+    bust=re.compile('bust=(.+?)"').findall(page)[0]
+    Log("bust:")
+    Log(bust)    
+    seasonIDUrl="http://abc.go.com/vp2/s/carousel?svc=season&showid=" + showID + "&bust=" + bust
+    Log(seasonIDUrl)
+    page=HTTP.Request(seasonIDUrl)
+    seasonID=re.compile('seasonid="(.+?)"').findall(page)[0]
+    Log("seasonID: ")
+    Log(seasonID)
+    
+    eplink1="http://abc.go.com/vp2/s/carousel?svc=showplaylist&showid=" + showID + "&playlistid=PL5515994&seasonid=" + seasonID + "&start=0&size=4&bust=" + bust
 
-
-    dir=getnfo(dir,key1,eplink1)
+    dir=getnfo(dir,bust,eplink1)
       
     return dir
 ####################################################################################################
-def getnfo(dir, key1, eplink1):
+def getnfo(dir, bust, eplink1):
     
       content2=XML.ElementFromURL(eplink1, True)
-      for item3 in content2.xpath('//div[@class="full"]'):
+      for item3 in content2.xpath('//div[@class="tile"]'):
         Log(item3)
-        vidUrl=item3.xpath('div/div/div[@class="thumb_img"]/a')[0].get('href')
-        thumb=item3.xpath('div/div/div[@class="thumb_img"]/a/img')[0].get('src')
-        title=item3.xpath('div/div[@class="ep_title"]/a')[0].text
+        vidUrl=item3.xpath('div[@class="thumb"]/a')[0].get('href')
+        thumb=item3.xpath('div[@class="thumb"]/a/img')[0].get('src')
+        title=item3.xpath('div[@class="tile_title"]/a')[0].text
+        summary=item3.xpath('div[@class="tile_desc"]')[0].text
         id=vidUrl.split('/')[-2]
-        idUrl="http://cdn.abc.go.com/vp2/ws/s/contents/2000/utils/mov/13/9024/"+id+"/432?v=05040004_3"
+        idUrl="http://cdn.abc.go.com/vp2/ws/s/contents/2000/utils/mov/13/9024/"+id+"/432?v="+ bust
         
         content3=XML.ElementFromURL(idUrl,False)
         for item4 in content3.xpath('//videos'):
@@ -80,7 +94,7 @@ def getnfo(dir, key1, eplink1):
 
           Log(thumb)
           Log(title)
-        dir.Append(RTMPVideoItem(player, clip, title=title, thumb=thumb))
+          dir.Append(RTMPVideoItem(player, clip, title=title, thumb=thumb,summary=summary))
       return dir
 
 
