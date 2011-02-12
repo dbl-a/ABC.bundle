@@ -6,7 +6,7 @@ PLUGIN_PREFIX = "/video/ABC"
 
 ABC_ROOT      = "http://abc.go.com/"
 SHOW_LIST     = "http://cdn.abc.go.com/vp2/ws-supt/s/syndication/2000/rss/001/001/-1/-1/-1/-1/-1/-1"
-EPISODE_LIST  = "http://cdn.abc.go.com/vp2/ws-supt/s/syndication/2000/rss/001/001/lf/PL5515994/%s/%s/-1/-1"
+EPISODE_LIST  = "http://cdn.abc.go.com/vp2/ws-supt/s/syndication/2000/rss/001/001/lf/-1/%s/-1/-1/-1"
 FEED_URL      = "http://cdn.abc.go.com/vp2/ws/s/contents/2000/utils/mov/13/9024/%s/432"
 ART_URL       = "http://cdn.media.abc.go.com/m/images/shows/%s/bg/bkgd.jpg"
 
@@ -41,9 +41,7 @@ def MainMenu():
 ####################################################################################################
 def VideoPage(sender, showID, art):
     dir = MediaContainer(title2=sender.itemTitle)
-    seasonIDUrl = "http://abc.go.com/vp2/s/carousel?svc=season&showid=" + showID
-    seasonID = XML.ElementFromURL(seasonIDUrl).xpath('//a')[0].get('seasonid')   #NEEDS TO HANDLE MULTI-SEASONS
-    episodeRSS = EPISODE_LIST % (showID, seasonID)
+    episodeRSS = EPISODE_LIST % (showID)
     content = XML.ElementFromURL(episodeRSS)
     #Log(content.xpath("//text()"))
     for item in content.xpath('//item'):
