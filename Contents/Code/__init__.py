@@ -48,19 +48,21 @@ def VideoPage(sender, showID, art):
     #Log(content.xpath("//text()"))
     for item in content.xpath('//item'):
         link = item.xpath('./link')[0].text
-        title = item.xpath('./title')[0].text
-        title = title.split(' Full Episode')[0]
+        title1 = item.xpath('./title')[0].text
+        title = title1.split(' Full Episode')[0]
+        season=re.findall('s([0-9]+)',title1.split(' Full Episode')[-1])[0]
+        episode=re.findall('e([0-9]+)',title1.split(' Full Episode')[-1])[0]
+        subtitle='s'+season+'.'+'e'+episode
         description = HTML.ElementFromString(item.xpath('./description')[0].text)
-        #Log(description.xpath("//text()"))
         thumb = description.xpath('.//img')[0].get('src')
         summary = description.xpath('.//p')[0].text
-        #subtitle = (description.xpath('//text()')[2])  #SHOWS AIRDATE, NEEDS BETTER METHOD TO OBTAIN
+        
         #Log(subtitle)
         #duration = description.xpath("//text()")[3].split(': ')[1]   #SHOWS DURATION, NEEDS BETTER METHOD TO OBTAIN & CHANGE TO MILLISECONDS
         #Log(duration)
         id=link.rsplit('/', 2)[1]
         url = FEED_URL % (id)
-        dir.Append(Function(VideoItem(VideoPlayer, title=title, summary=summary, thumb=thumb, art=art), url=url))  
+        dir.Append(Function(VideoItem(VideoPlayer, title=title, subtitle=subtitle,summary=summary, thumb=thumb, art=art), url=url))  
     return dir
     
 ####################################################################################################
