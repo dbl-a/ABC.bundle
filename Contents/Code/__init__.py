@@ -76,7 +76,7 @@ def VideoPlayer(sender, url):
     Log(url)
     content=XML.ElementFromURL(url)
     for item in content.xpath('//videos'):
-        clip=item.xpath('video[@bitrate="700"]')[0].get('src')
+        clip=item.xpath('video[@bitrate="1000"]')[0].get('src')
         #clip=item.get('src')             #MIGHT WANT TO SETUP PREFS FOR QUALITY???
         #Log(clip)
         #player="http://ll.video.abc.com/" + clip.replace("mp4:/","")  #DIRECT FEED BROKE!!!
